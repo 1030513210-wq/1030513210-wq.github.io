@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NBP probability calculator</title>
+<style>
+    body {
+        font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+        background: #f5f6f7;
+        margin: 0;
+        padding: 40px;
+    }
+    .card {
+        max-width: 720px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 4px;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.06);
+        padding: 24px 32px 32px;
+    }
+    h1 {
+        font-size: 22px;
+        margin-top: 0;
+        margin-bottom: 12px;
+    }
+    .subtitle {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 24px;
+    }
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 24px 0 12px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .field-group {
+        margin-bottom: 16px;
+    }
+    .field-label {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 6px;
+    }
+    .radio-row {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+    .radio-item {
+        font-size: 14px;
+    }
+    input[type="number"] {
+        padding: 6px 8px;
+        font-size: 14px;
+        border-radius: 3px;
+        border: 1px solid #ccc;
+        width: 140px;
+    }
+    button {
+        margin-top: 20px;
+        padding: 9px 18px;
+        font-size: 14px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        background-color: #0072B2;
+        color: #fff;
+    }
+    button:hover {
+        background-color: #005d92;
+    }
+    .result-box {
+        margin-top: 24px;
+        padding: 16px 18px;
+        background: #f0f6ff;
+        border-left: 4px solid #0072B2;
+        font-size: 14px;
+    }
+    .note {
+        font-size: 12px;
+        color: #666;
+        margin-top: 6px;
+    }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h1>NBP probability calculator</h1>
+    <div class="subtitle">
+        Logistic regression–based model. Outputs the estimated probability of non-bullous pemphigoid (NBP).  
+        Use for reference only; final diagnosis must rely on clinical, histologic and immunologic findings.
+    </div>
+
+    <div class="section-title">Patient data</div>
+
+    <!-- BSA -->
+    <div class="field-group">
+        <div class="field-label">BSA category</div>
+        <div class="radio-row">
+            <!-- BSA(0) reference: BSA2 = 0 -->
+            <label class="radio-item">
+                <input type="radio" name="bsa" value="0" checked> &lt; 10%
+            </label>
+            <!-- BSA(1) not in model: BSA2 = 0 -->
+            <label class="radio-item">
+                <input type="radio" name="bsa" value="0"> 10–30%
+            </label>
+            <!-- BSA(2) in model: BSA2 = 1 -->
+            <label class="radio-item">
+                <input type="radio" name="bsa" value="1"> &gt; 30%
+            </label>
+        </div>
+    </div>
+
+    <!-- Autoimmune / inflammatory disease -->
+    <div class="field-group">
+        <div class="field-label">Autoimmune / inflammatory disease</div>
+        <div class="radio-row">
+            <label class="radio-item">
+                <input type="radio" name="auto" value="1"> Present
+            </label>
+            <label class="radio-item">
+                <input type="radio" name="auto" value="0" checked> Absent
+            </label>
+        </div>
+    </div>
+
+    <!-- Neurological disease -->
+    <div class="field-group">
+        <div class="field-label">Neurological disease</div>
+        <div class="radio-row">
+            <label class="radio-item">
+                <input type="radio" name="neuro" value="1"> Present
+            </label>
+            <label class="radio-item">
+                <input type="radio" name="neuro" value="0" checked> Absent
+            </label>
+        </div>
+    </div>
+
+    <!-- Metabolic disease -->
+    <div class="field-group">
+        <div class="field-label">Metabolic disease</div>
+        <div class="radio-row">
+            <label class="radio-item">
+                <input type="radio" name="metab" value="1"> Present
+            </label>
+            <label class="radio-item">
+                <input type="radio" name="metab" value="0" checked> Absent
+            </label>
+        </div>
+    </div>
+
+    <!-- Delay in diagnosis -->
+    <div class="field-group">
+        <div class="field-label">Delay in diagnosis</div>
+        <div class="field-label" style="font-weight:400;font-size:13px;margin-bottom:4px;">
+            Delay from onset to diagnosis (months)
+        </div>
+        <input type="number" id="delay" value="0" min="0" step="1">
+    </div>
+
+    <!-- Treatment before diagnosis -->
+    <div class="field-group">
+        <div class="field-label">Treatment before diagnosis</div>
+        <div>
+            <!-- 这里只对“Antihistamine monotherapy”赋值 Treat1 = 1，其余 Treat1 = 0。
+                 如果你在 SPSS 中 Treatment(1) 对应的不是这一类，只需要调整下面 value="1" 的那一行。 -->
+            <div class="radio-item">
+                <label>
+                    <input type="radio" name="treat" value="1" checked>
+                    Antihistamine monotherapy
+                </label>
+            </div>
+            <div class="radio-item">
+                <label>
+                    <input type="radio" name="treat" value="0">
+                    Topical pharmacotherapy only
+                </label>
+            </div>
+            <div class="radio-item">
+                <label>
+                    <input type="radio" name="treat" value="0">
+                    Antihistamine + topical therapy
+                </label>
+            </div>
+            <div class="radio-item">
+                <label>
+                    <input type="radio" name="treat" value="0">
+                    Immunosuppressants / biologics
+                </label>
+            </div>
+            <div class="radio-item">
+                <label>
+                    <input type="radio" name="treat" value="0">
+                    Systemic corticosteroids
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" onclick="calculate()">Calculate NBP probability</button>
+
+    <div id="result" class="result-box" style="display:none;"></div>
+
+</div>
+
+<script>
+function calculate() {
+    // 读取输入
+    var BSA2   = parseFloat(document.querySelector('input[name="bsa"]:checked').value);
+    var Auto   = parseFloat(document.querySelector('input[name="auto"]:checked').value);
+    var Neuro  = parseFloat(document.querySelector('input[name="neuro"]:checked').value);
+    var Metab  = parseFloat(document.querySelector('input[name="metab"]:checked').value);
+    var Treat1 = parseFloat(document.querySelector('input[name="treat"]:checked').value);
+    var Delay  = parseFloat(document.getElementById("delay").value || "0");
+
+    if (Delay < 0) Delay = 0;
+
+    // Logistic 回归系数（来自你的 SPSS 表）
+    var intercept = -1.459;
+    var b_BSA2    =  1.157;
+    var b_Auto    = -1.896;  // Autoimmune / inflammatory diseases
+    var b_Neuro   =  2.041;
+    var b_Metab   =  0.835;
+    var b_Delay   =  0.044;
+    var b_Treat1  =  2.071;
+
+    // 计算 logit
+    var logitP = intercept
+               + b_BSA2   * BSA2
+               + b_Auto   * Auto
+               + b_Neuro  * Neuro
+               + b_Metab  * Metab
+               + b_Delay  * Delay
+               + b_Treat1 * Treat1;
+
+    // 转成概率
+    var P = 1 / (1 + Math.exp(-logitP));
+    var Ppct = (P * 100).toFixed(1);
+
+    var box = document.getElementById("result");
+    box.style.display = "block";
+    box.innerHTML =
+        "<strong>Estimated probability of NBP:</strong><br>" +
+        "P = " + P.toFixed(3) + " (" + Ppct + "%)" +
+        "<div class='note'>This is a model-based probability estimate and does not replace clinical diagnosis.</div>";
+}
+</script>
+
+</body>
+</html>
